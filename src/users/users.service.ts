@@ -71,6 +71,14 @@ export class UsersService {
     return access_token;
   }
 
+  async get(req) {
+    const user = await this.userRepository.findOne({
+      where: { email: req.user.email },
+    });
+
+    return user;
+  }
+
   async update(req: Request, data: UpdateUser, image?: Express.Multer.File) {
     const user = await this.userRepository.findByEmail(
       (req.user as User).email,

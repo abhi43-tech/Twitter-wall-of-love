@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseFilePipe,
+  Get,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/signup.dto';
@@ -45,6 +46,12 @@ export class UsersController {
   async login(@Body() user: LoginDto, @Request() req, @Response() res) {
     const token = await this.userService.login(user, res);
     res.json({ token: token });
+  }
+
+  @UseGuards(JwtGuard)
+  @Get()
+  async get(@Request() req) {
+    return await this.userService.get(req); 
   }
 
   @UseGuards(JwtGuard)

@@ -71,7 +71,7 @@ export class TweetController {
   async reorder(
     @Request() req,
     @Param('wallId') wallId: number,
-    @Body() orderData?: { tweetId: number; order: number }[],
+    @Body() orderData?: { id: number; order: number }[],
   ) {
     return await this.tweetService.reorder(req, wallId, orderData);
   }

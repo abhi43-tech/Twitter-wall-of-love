@@ -17,7 +17,7 @@ class SocialLinkDto {
     type: String,
   })
   @IsString()
-  url: string;
+  link: string;
 }
 
 export class UpdateWall {
@@ -49,14 +49,27 @@ export class UpdateWall {
   @IsBoolean()
   is_public: boolean;
 
-  @ApiProperty({
-      description: 'social links with platform',
-      example: "[{platofrm: instagram, url: instagram.com}]",
-      type: Array<SocialLinkDto>,
-    })
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SocialLinkDto)
-  social_links: SocialLinkDto[];
+ @ApiProperty({
+     description: 'social links with platform',
+     example: [{ platofrm: 'instagram', url: 'instagram.com' }],
+     type: Array<SocialLinkDto>,
+   })
+   @IsOptional()
+   @Transform(
+     ({ value }) => {
+       if (typeof value === 'string') {
+         try {
+           return JSON.parse(value);
+         } catch (e) {
+           throw new Error('social_links must be a valid JSON string');
+         }
+       }
+       return value;
+     },
+     { toClassOnly: true },
+   ) // Ensure transform runs before validation
+   @IsArray()
+   @ValidateNested({ each: true })
+   @Type(() => SocialLinkDto)
+   social_links?: SocialLinkDto[];
 }

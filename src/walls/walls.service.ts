@@ -30,7 +30,6 @@ export class WallsService {
     const user = await this.userRepository.findByEmail(
       (req.user as User).email,
     );
-
     if (!user) throw new BadRequestException('User not found');
 
     let is_public: boolean =
@@ -52,17 +51,35 @@ export class WallsService {
     newWall = await this.wallRepository.save(newWall);
 
     if (wall.social_links && wall.social_links.length > 0) {
-      const socialLinks = await Promise.all(
-        wall.social_links.map(async (link) =>
-          this.socialLinkRepo.create({
-            platform: link.platform,
-            link: link.url,
-            wall: newWall,
-          }),
-        ),
-      );
+      let socialLinksArray: { platform: string; url: string }[];
+      if (typeof wall.social_links === 'string') {
+        try {
+          socialLinksArray = JSON.parse(wall.social_links);
+        } catch (e) {
+          throw new BadRequestException(
+            'social_links must be a valid JSON string',
+          );
+        }
+      } else if (Array.isArray(wall.social_links)) {
+        socialLinksArray = wall.social_links;
+      } else {
+        throw new BadRequestException(
+          'social_links must be an array or valid JSON string',
+        );
+      }
 
-      await this.socialLinkRepo.save(socialLinks);
+      if (socialLinksArray.length > 0) {
+        const socialLinks = await Promise.all(
+          socialLinksArray.map(async (link) =>
+            this.socialLinkRepo.create({
+              platform: link.platform,
+              link: link.url,
+              wall: newWall,
+            }),
+          ),
+        );
+        await this.socialLinkRepo.save(socialLinks);
+      }
     }
 
     return {
@@ -139,22 +156,37 @@ export class WallsService {
     Object.assign(wall, data);
     await this.wallRepository.save(wall);
 
-    if (data.social_links) {
-      for (const link of data.social_links) {
-        const existingLink = wall.socialLinks.find(
-          (socialLink) => socialLink.platform === link.platform,
-        );
+    if (data.social_links && data.social_links.length > 0) {
+      let socialLinksArray: { platform: string; link: string }[];
+      if (typeof data.social_links === 'string') {
+        try {
+          socialLinksArray = JSON.parse(data.social_links);
+        } catch (e) {
+          throw new Error('social_links must be a valid JSON string');
+        }
+      } else if (Array.isArray(data.social_links)) {
+        socialLinksArray = data.social_links;
+      } else {
+        throw new Error('social_links must be an array or valid JSON string');
+      }
 
-        if (existingLink) {
-          existingLink.link = link.url;
-          await this.socialLinkRepo.save(existingLink);
-        } else {
-          const newSocialLink = this.socialLinkRepo.create({
-            platform: link.platform,
-            link: link.url,
-            wall,
-          });
-          await this.socialLinkRepo.save(newSocialLink);
+      if (socialLinksArray.length > 0) {
+        for (const link of socialLinksArray) {
+          const existingLink = wall.socialLinks.find(
+            (socialLink) => socialLink.platform === link.platform,
+          );
+
+          if (existingLink) {
+            existingLink.link = link.link;
+            await this.socialLinkRepo.save(existingLink);
+          } else {
+            const newSocialLink = this.socialLinkRepo.create({
+              platform: link.platform,
+              link: link.link,
+              wall,
+            });
+            await this.socialLinkRepo.save(newSocialLink);
+          }
         }
       }
     }
@@ -229,12 +261,9 @@ export class WallsService {
     return wall;
   }
 
-  async getEmbedCode(
-    req: Request,
-    wallId: number,
-  ): Promise<{ embedCode: string }> {
+  async getEmbedCode(req, wallId: number): Promise<{ embedCode: string }> {
     const user = await this.userRepository.findOne({
-      where: { email: (req.user as User).email },
+      where: { email: req.user.email },
       select: ['id'],
     });
     const wall = await this.wallRepository.findOne({
@@ -249,9 +278,8 @@ export class WallsService {
       );
     }
     if (!wall.sharable) {
-      throw new BadRequestException(
-        'Wall must be sharable to generate an embed code.',
-      );
+      wall.sharable = true;
+      await this.wallRepository.save(wall);
     }
 
     const baseUrl = this.configService.get<string>('APP_URL');

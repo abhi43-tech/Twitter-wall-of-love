@@ -64,7 +64,7 @@ export class WallsController {
   @Put(':wallId')
   @UseInterceptors(FileInterceptor('image'))
   async update(
-    @Request() req,
+    @Req() req,
     @Param('wallId') id: number,
     @Body() data: UpdateWall,
     @UploadedFile(new ParseFilePipe({ fileIsRequired: false }))
@@ -142,7 +142,7 @@ export class WallsController {
   @UseGuards(JwtGuard)
   @Get(':wallId/embed-code')
   async getEmbedCode(
-    @Request() req,
+    @Req() req,
     @Param('wallId') id: number,
   ): Promise<{ embedCode: string }> {
     return await this.wallsService.getEmbedCode(req, id);

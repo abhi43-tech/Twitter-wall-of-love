@@ -12,6 +12,7 @@ import { UserRepository } from '../users/repository/user.repository';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { WallRepository } from '../walls/repository/wall.repository';
 import { TweetRepository } from './repository/tweet.repository';
+import { In } from 'typeorm';
 
 @Injectable()
 export class TweetService {
@@ -87,7 +88,10 @@ export class TweetService {
     if (wall.user.email !== (req.user as User).email && !wall.is_public) {
       throw new BadRequestException('Tweets are not accessible.');
     }
-    return await this.tweetRepo.find({ where: { wall: { id: wall.id } } });
+    return await this.tweetRepo.find({
+      where: { wall: { id: wall.id } },
+      order: { order: 'ASC' },
+    });
   }
 
   async delete(req: Request, wallId: number, tweetId: number): Promise<string> {
@@ -114,33 +118,40 @@ export class TweetService {
   }
 
   async reorder(
-    req: Request,
+    req,
     wallId: number,
-    orderData?: { tweetId: number; order: number }[],
-  ): Promise<{ message: string } | Tweet[]> {
+    orderData?: { id: number; order: number }[],
+  ): Promise<Tweet[]> {
     const wall = await this.wallRepo.getWithUser(wallId);
     if (!wall) throw new NotFoundException('Wall not found.');
     if (wall.user.email !== (req.user as User).email) {
       throw new BadRequestException('Only the owner can reorder tweets.');
     }
 
-    if (!Array.isArray(orderData) || orderData.length <= 0) {
+    if (!Array.isArray(orderData) || orderData.length === 0) {
       return await this.randomOrder(req, wallId);
     }
 
-    for (const { tweetId, order } of orderData) {
-      const tweet = await this.tweetRepo.findOne({
-        where: { id: tweetId, wall: { id: wallId } },
-      });
-      if (!tweet)
-        throw new NotFoundException(
-          `Tweet with ID ${tweetId} not found in this Wall.`,
-        );
-      tweet.order = order;
-      await this.tweetRepo.save(tweet);
-    }
+    // Fetch all tweets by their IDs
+    const tweetIds = orderData.map((data) => data.id);
+    const tweets = await this.tweetRepo.find({
+      where: { id: In(tweetIds) },
+    });
 
-    return { message: 'Tweets reordered successfully' };
+    // Update order values in memory
+    const updatedTweets = tweets.map((tweet) => {
+      const newOrder = orderData.find((t) => t.id === tweet.id)?.order;
+      return { ...tweet, order: newOrder };
+    });
+
+    // Save all at once
+    await this.tweetRepo.save(updatedTweets);
+
+    // Return updated tweets sorted by order
+    return await this.tweetRepo.find({
+      where: { wall: { id: wallId } },
+      order: { order: 'ASC' },
+    });
   }
 
   async randomOrder(req: Request, wallId: number) {

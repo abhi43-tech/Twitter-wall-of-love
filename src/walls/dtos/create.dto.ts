@@ -60,12 +60,25 @@ export class CreateWallDto {
 
   @ApiProperty({
     description: 'social links with platform',
-    example: [{platofrm: 'instagram', url: 'instagram.com'}],
+    example: [{ platofrm: 'instagram', url: 'instagram.com' }],
     type: Array<SocialLinkDto>,
   })
   @IsOptional()
+  @Transform(
+    ({ value }) => {
+      if (typeof value === 'string') {
+        try {
+          return JSON.parse(value);
+        } catch (e) {
+          throw new Error('social_links must be a valid JSON string');
+        }
+      }
+      return value;
+    },
+    { toClassOnly: true },
+  ) // Ensure transform runs before validation
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SocialLinkDto)
-  social_links: SocialLinkDto[];
+  social_links?: SocialLinkDto[];
 }
