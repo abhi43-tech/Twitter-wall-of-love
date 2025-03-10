@@ -6,68 +6,86 @@ import { API_ENDPOINTS } from "../services/apiEndpoints";
 import Footer from "../components/footer.js";
 
 const Tweets = () => {
-  const { wallId } = useParams();
-  const navigate = useNavigate();
-  const [tweets, setTweets] = useState(null);
-  const [wall, setWall] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const logoUrl = "/path-to-logo.png"; // Fallback logo if wall.logo is unavailable
+    const { wallId } = useParams();
+    const navigate = useNavigate();
+    const [tweets, setTweets] = useState(null);
+    const [wall, setWall] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const logoUrl = "/path-to-logo.png"; // Fallback logo if wall.logo is unavailable
 
-  useEffect(() => {
-    const fetchWalls = async () => {
-      try {
-        let response = await api.get(API_ENDPOINTS.GET_TWEETS_BY_WALL(wallId));
-        setTweets(response.data);
-        response = await api.get(API_ENDPOINTS.GET_WALL_BY_ID(wallId));
-        setWall(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to load wall");
-        setLoading(false);
-      }
-    };
-    fetchWalls();
-  }, [wallId]);
+    useEffect(() => {
+        const fetchWalls = async () => {
+            try {
+                let response = await api.get(
+                    API_ENDPOINTS.GET_TWEETS_BY_WALL(wallId)
+                );
+                setTweets(response.data);
+                response = await api.get(API_ENDPOINTS.GET_WALL_BY_ID(wallId));
+                setWall(response.data);
+                setLoading(false);
+            } catch (err) {
+                setError("Failed to load wall");
+                setLoading(false);
+            }
+        };
+        fetchWalls();
+    }, [wallId]);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!tweets) return <div>Wall not found</div>;
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+    if (!tweets) return <div>Wall not found</div>;
 
-  return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center">
-          <img
-            src={wall?.logo || logoUrl}
-            alt="Logo"
-            className="w-10 h-10 mr-2 rounded-full"
-          />
-          <h2 className="text-2xl font-bold">{wall?.title || "Abhi's Wall"}</h2>
+    return (
+        <div className="p-6">
+            {/* Header Section */}
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <img
+                        src={wall?.logo || logoUrl}
+                        alt="Logo"
+                        className="w-10 h-10 mr-2 rounded-full"
+                    />
+                    <h2 className="text-2xl font-bold">
+                        {wall?.title || "User's Wall"}
+                    </h2>
+                </div>
+                <div className="space-x-4">
+                    <button
+                        onClick={() =>
+                            navigate(`/walls/${wallId}/create-tweet`)
+                        }
+                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    >
+                        Create Tweet
+                    </button>
+                    <button
+                        onClick={() => navigate(`/walls/${wallId}/edit`)}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                        Settings
+                    </button>
+                </div>
+            </div>
+
+            {/* Wall title and description */}
+            <div className="text-center mt-24 mb-36">
+                <h1 className="text-9xl font-semimedium">{wall?.title}</h1>
+                <p className="text-2xl text-gray-600">
+                    {wall?.description || "No description available."}
+                </p>
+            </div>
+
+            {/* Tweet List */}
+            {tweets && tweets.length > 0 ? (
+                <TweetList wallId={wallId} tweets={tweets} />
+            ) : (
+                "No tweets are added yet."
+            )}
+
+            <Footer socialLinks={wall?.socialLinks} />
         </div>
-        <div className="space-x-4">
-          <button
-            onClick={() => navigate(`/walls/${wallId}/create-tweet`)}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Create Tweet
-          </button>
-          <button
-            onClick={() => navigate(`/walls/${wallId}/edit`)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Settings
-          </button>
-        </div>
-      </div>
-      {tweets && tweets.length > 0 ? (
-        <TweetList wallId={wallId} tweets={tweets} />
-      ) : (
-        "No tweets are added yet."
-      )}
-      <Footer socialLinks={wall?.socialLinks} />
-    </div>
-  );
+    );
 };
 
 export default Tweets;

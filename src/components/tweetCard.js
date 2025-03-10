@@ -1,7 +1,11 @@
 import React from 'react';
 import { debounce } from 'lodash';
+import { useSortable } from '@dnd-kit/sortable';
+import {CSS} from "@dnd-kit/utilities"
 
-const TweetCard = ({ tweet, onDelete }) => {
+const TweetCard = ({ id, tweet, onDelete }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({id})
+
   const handleClick = debounce(() => {
     window.open(tweet.profileLink, '_blank');
   }, 300);
@@ -12,8 +16,13 @@ const TweetCard = ({ tweet, onDelete }) => {
     }
   };
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition
+  }
+
   return (
-    <div className="relative p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-200 w-full">
+    <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="relative p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-200 w-full">
       {/* Delete Button (Top-Right) */}
       {onDelete && (
         <button

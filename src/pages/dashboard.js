@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api'; // Adjust path as needed
+import api from '../services/api'; 
 import { API_ENDPOINTS } from '../services/apiEndpoints';
+import { AuthContext } from '../context/authContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [walls, setWalls] = useState([]);
-  const logoUrl = '/path-to-logo.png';
+  const { user } = useContext(AuthContext);
+  const logoUrl = user.profile_pic ?? 'https://www.pngmart.com/files/23/Zoro-PNG-Image.png';
 
   useEffect(() => {
     const fetchWalls = async () => {
-      const response = await api.get(API_ENDPOINTS.GET_ALL_WALLS); // Adjust endpoint
+      const response = await api.get(API_ENDPOINTS.GET_ALL_WALLS); 
       setWalls(response.data);
     };
     fetchWalls();
@@ -25,7 +27,7 @@ const Dashboard = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <img src={logoUrl} alt="Logo" className="w-10 h-10 mr-2 rounded-full" />
-          <h2 className="text-2xl font-bold">Abhi's Wall</h2>
+          <h2 className="text-2xl font-bold">{user.name}'s Wall</h2>
         </div>
         <div className="space-x-4">
           <button
