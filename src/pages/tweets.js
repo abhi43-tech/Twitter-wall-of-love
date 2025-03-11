@@ -8,7 +8,6 @@ import Footer from "../components/footer.js";
 const Tweets = () => {
     const { wallId } = useParams();
     const navigate = useNavigate();
-    const [tweets, setTweets] = useState(null);
     const [wall, setWall] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -17,11 +16,7 @@ const Tweets = () => {
     useEffect(() => {
         const fetchWalls = async () => {
             try {
-                let response = await api.get(
-                    API_ENDPOINTS.GET_TWEETS_BY_WALL(wallId)
-                );
-                setTweets(response.data);
-                response = await api.get(API_ENDPOINTS.GET_WALL_BY_ID(wallId));
+                const response = await api.get(API_ENDPOINTS.GET_WALL_BY_ID(wallId));
                 setWall(response.data);
                 setLoading(false);
             } catch (err) {
@@ -32,24 +27,28 @@ const Tweets = () => {
         fetchWalls();
     }, [wallId]);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-    if (!tweets) return <div>Wall not found</div>;
+
+    if (loading)
+        return <div className="text-center text-gray-600">Loading...</div>;
+    if (error) return <div className="text-center text-red-600">{error}</div>;
+    if (!wall)
+        return <div className="text-center text-gray-600">Wall not found</div>;
 
     return (
         <div className="p-6">
             {/* Header Section */}
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-4">
                     <img
                         src={wall?.logo || logoUrl}
                         alt="Logo"
-                        className="w-10 h-10 mr-2 rounded-full"
+                        className="w-10 h-10 rounded-full"
                     />
                     <h2 className="text-2xl font-bold">
                         {wall?.title || "User's Wall"}
                     </h2>
                 </div>
+
                 <div className="space-x-4">
                     <button
                         onClick={() =>
@@ -70,18 +69,16 @@ const Tweets = () => {
 
             {/* Wall title and description */}
             <div className="text-center mt-24 mb-36">
-                <h1 className="text-9xl font-semimedium">{wall?.title}</h1>
+                <h1 className="text-9xl font-semibold">{wall?.title}</h1>
                 <p className="text-2xl text-gray-600">
                     {wall?.description || "No description available."}
                 </p>
             </div>
 
             {/* Tweet List */}
-            {tweets && tweets.length > 0 ? (
-                <TweetList wallId={wallId} tweets={tweets} />
-            ) : (
-                "No tweets are added yet."
-            )}
+            <TweetList
+                wallId={wallId}
+            />
 
             <Footer socialLinks={wall?.socialLinks} />
         </div>

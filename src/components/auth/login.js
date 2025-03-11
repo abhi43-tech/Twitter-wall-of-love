@@ -54,7 +54,7 @@ const Login = () => {
           </button>
         </form>
         <p className="mt-4 text-center">
-          <a href="/reset-password" className="text-blue-500 hover:underline">
+          <a href="/reset-password/request" className="text-blue-500 hover:underline">
             Forgot Password?
           </a>
         </p>

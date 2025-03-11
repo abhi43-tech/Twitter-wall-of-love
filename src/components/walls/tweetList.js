@@ -3,39 +3,27 @@ import api from "../../services/api";
 import { API_ENDPOINTS } from "../../services/apiEndpoints";
 import TweetCard from "../tweetCard";
 import { closestCorners, DndContext } from "@dnd-kit/core";
-import {
-    SortableContext,
-    verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import Tweets from "../../pages/tweets";
+import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 
 const TweetList = ({ wallId }) => {
     const [tweets, setTweets] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch tweets when the component mounts or wallId changes
     useEffect(() => {
-        const fetchTweets = async () => {
+        const fetchWalls = async () => {
             try {
-                if (!wallId) {
-                    throw new Error("Wall ID is required to fetch tweets");
-                }
-                const response = await api.get(
+                let response = await api.get(
                     API_ENDPOINTS.GET_TWEETS_BY_WALL(wallId)
                 );
-                setTweets(response.data || []);
-                setLoading(false);
+                const tweetData = Array.isArray(response.data)
+                    ? response.data
+                    : [];
+                setTweets(tweetData);
             } catch (err) {
-                console.error("Fetch Tweets Error:", err.message);
-                setError(
-                    err.response?.data?.message || "Failed to load tweets"
-                );
-                setLoading(false);
+                setError("Failed to load wall");
             }
         };
-
-        fetchTweets();
+        fetchWalls();
     }, [wallId]);
 
     // Handle randomization of tweets via backend
@@ -49,7 +37,7 @@ const TweetList = ({ wallId }) => {
             const response = await api.patch(
                 API_ENDPOINTS.REORDER_TWEETS(wallId)
             );
-            setTweets(response.data || []);
+            setTweets(response.data);
         } catch (err) {
             console.error("Randomize Tweets Error:", err.message);
             setError(
@@ -65,8 +53,7 @@ const TweetList = ({ wallId }) => {
 
         try {
             setError(null);
-            await api.delete(API_ENDPOINTS.DELETE_TWEET(wallId, tweetId));
-            setTweets(tweets.filter((tweet) => tweet.id !== tweetId));
+            await api.delete(API_ENDPOINTS.DELETE_TWEET(wallId, tweetId)); // Use parent's onDelete callback
         } catch (err) {
             console.error("Delete Tweet Error:", err.message);
             setError(err.response?.data?.message || "Failed to delete tweet");
@@ -74,50 +61,41 @@ const TweetList = ({ wallId }) => {
     };
 
     const handleDragEnd = async (event) => {
-      const { active, over } = event;
-  
-      if (!over || active.id === over.id) return;
-  
-      const oldIndex = tweets.findIndex((tweet) => tweet.id === active.id);
-      const newIndex = tweets.findIndex((tweet) => tweet.id === over.id);
-  
-      // Reorder tweets locally
-      const reorderedTweets = [...tweets];
-      const [movedTweet] = reorderedTweets.splice(oldIndex, 1);
-      reorderedTweets.splice(newIndex, 0, movedTweet);
-  
-      // Update order values based on new positions
-      const updatedTweets = reorderedTweets.map((tweet, index) => ({
-          id: tweet.id,
-          order: index, 
-      }));
-  
-      setTweets(reorderedTweets); 
-  
-      try {
-          setError(null);
-          const response = await api.patch(
-              API_ENDPOINTS.REORDER_TWEETS(wallId),
-              updatedTweets 
-          );
-  
-          if (response.data) {
-              setTweets(response.data);
-          }
-      } catch (err) {
-          console.error("Error reordering tweets:", err);
-          setError(err.response?.data?.message || "Failed to reorder tweets");
-      }
-  };
-  
+        const { active, over } = event;
 
-    // Loading and error states
-    if (loading)
-        return (
-            <div className="text-center p-6 text-gray-500">
-                Loading tweets...
-            </div>
-        );
+        if (!over || active.id === over.id) return;
+
+        const oldIndex = tweets.findIndex((tweet) => tweet.id === active.id);
+        const newIndex = tweets.findIndex((tweet) => tweet.id === over.id);
+
+        // Reorder tweets locally
+        const reorderedTweets = [...tweets];
+        const [movedTweet] = reorderedTweets.splice(oldIndex, 1);
+        reorderedTweets.splice(newIndex, 0, movedTweet);
+
+        // Update order values based on new positions
+        const updatedTweets = reorderedTweets.map((tweet, index) => ({
+            id: tweet.id,
+            order: index,
+        }));
+
+        try {
+            setError(null);
+            const response = await api.patch(
+                API_ENDPOINTS.REORDER_TWEETS(wallId),
+                updatedTweets
+            );
+
+            if (response.data) {
+                setTweets(response.data); // Sync with API response
+            }
+        } catch (err) {
+            console.error("Error reordering tweets:", err);
+            setError(err.response?.data?.message || "Failed to reorder tweets");
+        }
+    };
+
+    // Error state
     if (error)
         return <div className="text-center p-6 text-red-500">{error}</div>;
 
@@ -128,7 +106,7 @@ const TweetList = ({ wallId }) => {
                 <button
                     onClick={handleRandomize}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={tweets.length === 0 || loading}
+                    disabled={tweets.length === 0}
                 >
                     Randomize Tweets
                 </button>
@@ -146,14 +124,14 @@ const TweetList = ({ wallId }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         <SortableContext
                             items={tweets}
-                            strategy={verticalListSortingStrategy}
+                            strategy={rectSortingStrategy}
                         >
                             {tweets.map((tweet) => (
                                 <TweetCard
                                     id={tweet.id}
                                     key={tweet.id}
                                     tweet={tweet}
-                                    onDelete={handleDelete}
+                                    onDelete={() => handleDelete(tweet.id)}
                                 />
                             ))}
                         </SortableContext>

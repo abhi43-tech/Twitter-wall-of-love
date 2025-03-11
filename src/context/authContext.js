@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
                     setLoading(false);
                 })
                 .catch(() => {
-                    Cookies.remove("Access");
                     setLoading(false);
                 });
         } else {
@@ -27,11 +26,13 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const signup = async (name, email, password, profilePic) => {
-        const response = await api.post(API_ENDPOINTS.SIGNUP, {
-            name,
-            email,
-            password,
-            profile_pic: profilePic,
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("email", email);
+        formData.append("password", password);
+        if (profilePic) formData.append("image", profilePic);
+        const response = await api.post(API_ENDPOINTS.SIGNUP, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
         });
         return response.data;
     };
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     const resetPassword = async (token, newPassword) => {
         const response = await api.post(API_ENDPOINTS.RESET_PASSWORD, {
             token,
-            new_password: newPassword,
+            password: newPassword,
         });
         return response.data;
     };
