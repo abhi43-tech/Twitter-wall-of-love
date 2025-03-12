@@ -12,7 +12,7 @@ const TweetList = ({ wallId }) => {
     useEffect(() => {
         const fetchWalls = async () => {
             try {
-                let response = await api.get(
+                const response = await api.get(
                     API_ENDPOINTS.GET_TWEETS_BY_WALL(wallId)
                 );
                 const tweetData = Array.isArray(response.data)
@@ -24,7 +24,7 @@ const TweetList = ({ wallId }) => {
             }
         };
         fetchWalls();
-    }, [wallId]);
+    }, [wallId, tweets]);
 
     // Handle randomization of tweets via backend
     const handleRandomize = async () => {
@@ -54,6 +54,13 @@ const TweetList = ({ wallId }) => {
         try {
             setError(null);
             await api.delete(API_ENDPOINTS.DELETE_TWEET(wallId, tweetId)); // Use parent's onDelete callback
+            const response = await api.get(
+                API_ENDPOINTS.GET_TWEETS_BY_WALL(wallId)
+            );
+            const tweetData = Array.isArray(response.data)
+                ? response.data
+                : [];
+            setTweets(tweetData);
         } catch (err) {
             console.error("Delete Tweet Error:", err.message);
             setError(err.response?.data?.message || "Failed to delete tweet");

@@ -51,7 +51,7 @@ const Dashboard = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-4">
           <img src={logoUrl} alt="Logo" className="w-10 h-10 rounded-full" />
-          <h2 className="text-2xl font-bold">{user.name}</h2>
+          <h2 className="text-2xl font-bold">{user?.name}</h2>
         </div>
 
         {/* Search Bar in Header */}

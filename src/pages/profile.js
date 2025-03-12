@@ -1,7 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/authContext';
-import api from '../services/api';
-import { API_ENDPOINTS } from '../services/apiEndpoints';
+
 
 const Profile = () => {
   const { user, updateUser, deleteUser, generateApiToken } = useContext(AuthContext);
