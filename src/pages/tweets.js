@@ -11,12 +11,15 @@ const Tweets = () => {
     const [wall, setWall] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const logoUrl = "/path-to-logo.png"; // Fallback logo if wall.logo is unavailable
+
+    const defaultLogo = "https://tse2.mm.bing.net/th?id=OIP.RSzoqHXu3mhO0ovCOK4HrQHaEK&pid=Api&P=0&h=180"; // Fallback logo
 
     useEffect(() => {
-        const fetchWalls = async () => {
+        const fetchWall = async () => {
             try {
-                const response = await api.get(API_ENDPOINTS.GET_WALL_BY_ID(wallId));
+                const response = await api.get(
+                    API_ENDPOINTS.GET_WALL_BY_ID(wallId)
+                );
                 setWall(response.data);
                 setLoading(false);
             } catch (err) {
@@ -24,62 +27,59 @@ const Tweets = () => {
                 setLoading(false);
             }
         };
-        fetchWalls();
+        fetchWall();
     }, [wallId]);
 
-
-    if (loading)
+    if (loading) {
         return <div className="text-center text-gray-600">Loading...</div>;
-    if (error) return <div className="text-center text-red-600">{error}</div>;
-    if (!wall)
+    }
+    if (error) {
+        return <div className="text-center text-red-600">{error}</div>;
+    }
+    if (!wall) {
         return <div className="text-center text-gray-600">Wall not found</div>;
+    }
 
     return (
-        <div className="p-6">
+        <div className="p-4 max-w-5xl mx-auto">
             {/* Header Section */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-4">
+						<header className="flex items-center justify-between bg-white shadow-md rounded-lg px-4 py-3 mb-6">
+                {/* Left Section - Logo + Name */}
+                <div
+                    className="flex items-center space-x-3 cursor-pointer"
+                    onClick={() => navigate(`/walls/${wallId}/edit`)}
+                >
                     <img
-                        src={wall?.logo || logoUrl}
-                        alt="Logo"
-                        className="w-10 h-10 rounded-full"
+                        src={wall?.logo || defaultLogo}
+                        alt="Wall Logo"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-gray-300"
                     />
-                    <h2 className="text-2xl font-bold">
+                    <h2 className="text-xl font-bold text-gray-800">
                         {wall?.title || "User's Wall"}
                     </h2>
                 </div>
 
-                <div className="space-x-4">
-                    <button
-                        onClick={() =>
-                            navigate(`/walls/${wallId}/create-tweet`)
-                        }
-                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    >
-                        Create Tweet
-                    </button>
-                    <button
-                        onClick={() => navigate(`/walls/${wallId}/edit`)}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                    >
-                        Settings
-                    </button>
-                </div>
-            </div>
+                {/* Right Section - Search Bar (Takes Full Width on Small Screens) */}
+                <button
+                    onClick={() => navigate(`/walls/${wallId}/create-tweet`)}
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                >
+                    Create Tweet
+                </button>
+            </header>
 
-            {/* Wall title and description */}
-            <div className="text-center mt-24 mb-36">
-                <h1 className="text-9xl font-semibold">{wall?.title}</h1>
-                <p className="text-2xl text-gray-600">
+            {/* Wall Title & Description */}
+            <div className="text-center mt-12 mb-20">
+                <h1 className="text-6xl font-semibold">{wall?.title}</h1>
+                <p className="text-lg text-gray-600 mt-2">
                     {wall?.description || "No description available."}
                 </p>
             </div>
 
             {/* Tweet List */}
-            <TweetList
-                wallId={wallId}
-            />
+            <TweetList wallId={wallId} />
 
+            {/* Footer */}
             <Footer socialLinks={wall?.socialLinks} />
         </div>
     );

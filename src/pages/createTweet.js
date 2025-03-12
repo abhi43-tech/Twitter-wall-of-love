@@ -9,7 +9,6 @@ const CreateWall = () => {
   const handleTweetCreated = () => {
     navigate(`/walls/${wallId}/tweets`); // Adjust to '/' if dashboard is at root
   };
-  console.log(wallId)
 
   return (
     <div className="p-6">

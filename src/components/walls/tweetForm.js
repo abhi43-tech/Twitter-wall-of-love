@@ -19,7 +19,6 @@ const TweetForm = ({ wallId, onTweetAdded }) => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-      <h3 className="text-xl font-semibold mb-4">Add a Tweet</h3>
       {error && <p className="text-red-500 mb-4">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

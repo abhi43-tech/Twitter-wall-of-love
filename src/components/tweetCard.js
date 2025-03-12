@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { debounce } from "lodash";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -7,9 +7,9 @@ const TweetCard = ({ id, tweet, onDelete }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id });
 
-    const handleClick = debounce(() => {
+    const handleProfileClick = useCallback(() => {
         window.open(tweet.profileLink, "_blank");
-    }, 300);
+    }, [tweet.profileLink]);
 
     const handleDeleteClick = (e) => {
         e.stopPropagation();
@@ -27,45 +27,47 @@ const TweetCard = ({ id, tweet, onDelete }) => {
         <div
             ref={setNodeRef}
             style={style}
-            onClick={(e) => e.stopPropagation()}
-            className="relative p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-200 w-full"
+            className="relative p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-200 w-full cursor-pointer"
+            onClick={handleProfileClick}
         >
             {/* Delete Button (Top-Right) */}
             {onDelete && (
                 <button
                     onClick={handleDeleteClick}
-                    style={{ pointerEvents: "auto" }}
                     className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600 transition-colors"
                 >
                     Delete
                 </button>
             )}
-            {/* Centered Content */}
-            <div
-                {...attributes}
-                {...listeners}
-                className="flex flex-col items-center"
-            >
+
+            {/* Drag & Drop Handle */}
+            <div {...attributes} {...listeners} className="flex flex-col items-center">
+                {/* Profile Picture */}
                 <img
                     src={tweet.profile_pic || "/placeholder.jpg"}
                     alt={tweet.author_name}
                     className="w-16 h-16 rounded-full mb-2 object-cover"
                 />
-                <p className="font-semibold text-gray-800">
-                    {tweet.author_name}
-                </p>
+                
+                {/* Author Name */}
+                <p className="font-semibold text-gray-800">{tweet.author_name}</p>
+
+                {/* Profile Link */}
                 <a
                     href={tweet.profileLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 text-sm hover:underline"
-                    onClick={handleClick}
+                    className="text-blue-500 text-sm hover:underline focus:outline-none focus:ring focus:ring-blue-300"
                 >
                     @{tweet.author_name}
                 </a>
+
+                {/* Tweet Content */}
                 <p className="text-gray-700 text-center mt-2 break-words">
                     {tweet.content}
                 </p>
+
+                {/* Engagement Metrics */}
                 <div className="flex space-x-4 text-gray-500 text-sm mt-2">
                     <span className="flex items-center">
                         <span className="mr-1">❤️</span> {tweet.likes || 0}
@@ -80,3 +82,4 @@ const TweetCard = ({ id, tweet, onDelete }) => {
 };
 
 export default TweetCard;
+    

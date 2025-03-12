@@ -28,10 +28,9 @@ const EditWall = () => {
                 setTitle(wallData.title || "");
                 setDescription(wallData.description || "");
                 setIsPublic(wallData.is_public ?? true);
-                const initialSocialLinks = wallData.socialLinks
-                    ? [...wallData.socialLinks]
-                    : [];
-                setSocialLinks(initialSocialLinks);
+                setSocialLinks(
+                    wallData.socialLinks ? [...wallData.socialLinks] : []
+                );
                 setLoading(false);
             } catch (err) {
                 setError("Failed to load wall");
@@ -45,12 +44,11 @@ const EditWall = () => {
         e.preventDefault();
         try {
             setError("");
-            const invalidLinks = socialLinks.filter(
-                (link) => !link.platform || !link.link || link.link.trim() === ""
-            );
-            if (invalidLinks.length > 0) {
+            if (
+                socialLinks.some((link) => !link.platform || !link.link.trim())
+            ) {
                 throw new Error(
-                    "All social links must have a platform and a non-empty URL"
+                    "All social links must have a platform and a non-empty URL."
                 );
             }
 
@@ -59,9 +57,9 @@ const EditWall = () => {
             formData.append("description", description);
             formData.append("is_public", isPublic);
             if (logo) formData.append("image", logo);
-            formData.append("social_links", JSON.stringify(socialLinks)); // Always send, even if empty
+            formData.append("social_links", JSON.stringify(socialLinks));
 
-            await api.put(API_ENDPOINTS.UPDATE_WALL(wallId), formData); // Fixed to use wallId
+            await api.put(API_ENDPOINTS.UPDATE_WALL(wallId), formData);
             navigate(`/walls/${wallId}/tweets`);
         } catch (err) {
             setError(err.message || "Failed to save wall");
@@ -93,7 +91,7 @@ const EditWall = () => {
     const handleGenerateEmbedCode = async () => {
         try {
             const response = await api.get(
-                API_ENDPOINTS.GET_EMBED_CODE(wallId) // Fixed to use wallId
+                API_ENDPOINTS.GET_EMBED_CODE(wallId)
             );
             setEmbedCode(response.data.embedCode);
         } catch (err) {
@@ -115,7 +113,9 @@ const EditWall = () => {
         try {
             const linkToRemove = socialLinks[index];
             if (linkToRemove && linkToRemove.id) {
-                await api.delete(API_ENDPOINTS.DELETE_SOCIAL_LINK(wallId, linkToRemove.id));
+                await api.delete(
+                    API_ENDPOINTS.DELETE_SOCIAL_LINK(wallId, linkToRemove.id)
+                );
             }
             setSocialLinks(socialLinks.filter((_, i) => i !== index));
         } catch (err) {
@@ -123,24 +123,46 @@ const EditWall = () => {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-    if (!wall) return <div>Wall not found</div>;
+    const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        alert("Copied to clipboard!");
+    };
+
+    if (loading)
+        return <div className="text-center text-gray-600">Loading...</div>;
+    if (error) return <div className="text-center text-red-600">{error}</div>;
+    if (!wall)
+        return <div className="text-center text-gray-600">Wall not found</div>;
 
     return (
-        <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Edit Wall</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Title</label>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="w-full p-2 border rounded"
-                        required
-                    />
+        <div className="p-4 max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center">Edit Wall</h2>
+
+            <form
+                onSubmit={handleSubmit}
+                className="bg-white shadow-md rounded-lg p-6"
+            >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label className="block text-gray-700">Title</label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="w-full p-2 border rounded"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-gray-700">Logo</label>
+                        <input
+                            type="file"
+                            onChange={(e) => setLogo(e.target.files[0])}
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
                 </div>
+
                 <div className="mb-4">
                     <label className="block text-gray-700">Description</label>
                     <textarea
@@ -149,23 +171,16 @@ const EditWall = () => {
                         className="w-full p-2 border rounded"
                     />
                 </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Logo</label>
-                    <input
-                        type="file"
-                        onChange={(e) => setLogo(e.target.files[0])}
-                        className="w-full p-2 border rounded"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Public</label>
+
+                <div className="mb-4 flex items-center space-x-2">
                     <input
                         type="checkbox"
                         checked={isPublic}
                         onChange={(e) => setIsPublic(e.target.checked)}
                     />
-                    Make public
+                    <label className="text-gray-700">Make Public</label>
                 </div>
+
                 <div className="mb-4">
                     <label className="block text-gray-700 mb-2">
                         Social Links
@@ -219,37 +234,66 @@ const EditWall = () => {
                         Add Social Link
                     </button>
                 </div>
+
                 <button
                     type="submit"
-                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    className="bg-blue-500 text-white px-4 py-2 rounded w-full hover:bg-blue-600"
                 >
                     Save Changes
                 </button>
             </form>
 
-            <div className="mt-6">
+            <div className="mt-6 space-y-3">
                 <button
                     onClick={handleGenerateSharableLink}
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mr-4"
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
                 >
                     Generate Sharable Link
                 </button>
+                {sharableLink && (
+                    <div className="flex items-center space-x-2 mt-2">
+                        <input
+                            type="text"
+                            value={sharableLink}
+                            readOnly
+                            className="w-full p-2 border rounded"
+                        />
+                        <button
+                            onClick={() => copyToClipboard(sharableLink)}
+                            className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400"
+                        >
+                            Copy
+                        </button>
+                    </div>
+                )}
+
                 <button
                     onClick={handleGenerateEmbedCode}
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
                 >
                     Generate Embed Code
                 </button>
-                {sharableLink && (
-                    <p className="mt-2">Sharable Link: {sharableLink}</p>
+                {embedCode && (
+                    <div className="flex items-center space-x-2 mt-2">
+                        <textarea
+                            value={embedCode}
+                            readOnly
+                            className="w-full p-2 border rounded"
+                        />
+                        <button
+                            onClick={() => copyToClipboard(embedCode)}
+                            className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400"
+                        >
+                            Copy
+                        </button>
+                    </div>
                 )}
-                {embedCode && <p className="mt-2">Embed Code: {embedCode}</p>}
             </div>
 
             <div className="mt-6">
                 <button
                     onClick={handleDeleteWall}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full"
                 >
                     Delete Wall
                 </button>
