@@ -29,6 +29,7 @@ const Profile = () => {
         try {
             await updateUser(name, email, profilePic);
             setStatus("Profile updated successfully");
+            setTimeout(() => navigate("/dashboard"), 2000);
         } catch (err) {
             setStatus("Failed to update profile");
         }
@@ -61,11 +62,6 @@ const Profile = () => {
         } catch (err) {
             setError("Failed to generate API token");
         }
-    };
-
-    const confirmLogout = () => {
-        logout();
-        navigate("/login");
     };
 
     const confirmDelete = async () => {
@@ -174,43 +170,12 @@ const Profile = () => {
             {/* Logout & Delete Buttons */}
             <div className="flex flex-col space-y-4 mt-6">
                 <button
-                    onClick={() => setShowLogoutModal(true)}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                >
-                    Log Out
-                </button>
-                <button
                     onClick={() => setShowDeleteModal(true)}
                     className="bg-red-700 text-white px-4 py-2 rounded hover:bg-red-800"
                 >
                     Delete Account
                 </button>
             </div>
-
-            {/* Logout Confirmation Modal */}
-            {showLogoutModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                        <p className="mb-4">
-                            Are you sure you want to log out?
-                        </p>
-                        <div className="flex justify-center space-x-4">
-                            <button
-                                onClick={confirmLogout}
-                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                            >
-                                Yes, Log Out
-                            </button>
-                            <button
-                                onClick={() => setShowLogoutModal(false)}
-                                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Delete Account Confirmation Modal */}
             {showDeleteModal && (

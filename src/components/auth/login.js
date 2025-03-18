@@ -60,12 +60,18 @@ const Login = () => {
           </button>
         </form>
 
-        <p className="mt-4 text-center">
+        <p className="mt-4 text-center flex justify-between">
           <a
             href="/reset-password/request"
             className="text-blue-500 hover:underline"
           >
             Forgot Password?
+          </a>
+          <a
+            href="/signup"
+            className="text-blue-500 hover:underline"
+          >
+            Create Account
           </a>
         </p>
       </div>

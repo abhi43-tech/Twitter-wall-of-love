@@ -1,15 +1,16 @@
 import React, { useCallback } from "react";
-import { debounce } from "lodash";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import defaultImage from "../images/Twitter-wall-of-love.png";
 
-const TweetCard = ({ id, tweet, onDelete }) => {
+const TweetCard = ({ id, tweet, onDelete, isEditable }) => {
     const { attributes, listeners, setNodeRef, transform, transition } =
         useSortable({ id });
 
     const handleProfileClick = useCallback(() => {
-        window.open(tweet.profileLink, "_blank");
-    }, [tweet.profileLink]);
+        const link = `https://x.com/${tweet.author_name}/status/${tweet.tweet_id}`;
+        window.open(link, "_blank");
+    }, []);
 
     const handleDeleteClick = (e) => {
         e.stopPropagation();
@@ -28,10 +29,10 @@ const TweetCard = ({ id, tweet, onDelete }) => {
             ref={setNodeRef}
             style={style}
             className="relative p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all border border-gray-200 w-full cursor-pointer"
-            onClick={handleProfileClick}
+            onDoubleClick={handleProfileClick}
         >
             {/* Delete Button (Top-Right) */}
-            {onDelete && (
+            {onDelete && isEditable && (
                 <button
                     onClick={handleDeleteClick}
                     className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600 transition-colors"
@@ -44,7 +45,7 @@ const TweetCard = ({ id, tweet, onDelete }) => {
             <div {...attributes} {...listeners} className="flex flex-col items-center">
                 {/* Profile Picture */}
                 <img
-                    src={tweet.profile_pic || "/placeholder.jpg"}
+                    src={tweet?.profile_pic || defaultImage}
                     alt={tweet.author_name}
                     className="w-16 h-16 rounded-full mb-2 object-cover"
                 />

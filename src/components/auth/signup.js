@@ -10,13 +10,16 @@ const Signup = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState(''); // New state for success message
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setError(null);
       await signup(name, email, password, profilePic);
-      navigate('/login');
+      setSuccessMessage('Signup successful! Please check your email to verify your account.');
+      setTimeout(() => navigate('/login'), 1000); 
     } catch (err) {
       setError(err.response?.data?.message || 'Signup failed');
     }
@@ -24,7 +27,6 @@ const Signup = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
@@ -38,7 +40,7 @@ const Signup = () => {
     }
 
     setProfilePic(file);
-    setPreview(URL.createObjectURL(file)); // Show preview
+    setPreview(URL.createObjectURL(file));
   };
 
   return (
@@ -49,6 +51,12 @@ const Signup = () => {
         {error && (
           <p className="bg-red-100 text-red-600 p-3 rounded mb-4 text-center border border-red-400">
             {error}
+          </p>
+        )}
+
+        {successMessage && (
+          <p className="bg-green-100 text-green-600 p-3 rounded mb-4 text-center border border-green-400">
+            {successMessage}
           </p>
         )}
 
@@ -115,6 +123,14 @@ const Signup = () => {
             Signup
           </button>
         </form>
+        <p className="mt-4 text-center justify-between">
+          <a
+            href="/login"
+            className="text-blue-500 hover:underline"
+          >
+            Already have an account?
+          </a>
+        </p>
       </div>
     </div>
   );

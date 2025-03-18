@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }) => {
 
     const deleteUser = async () => {
         const response = await api.delete(API_ENDPOINTS.DELETE_USER);
-        Cookies.remove("Access");
+        // Cookies.remove("Access");
         setUser(null);
         return response.data;
     };

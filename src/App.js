@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/home';
 // import PublicWall from './pages/walls';
 import Dashboard from './pages/dashboard';
 import Profile from './pages/profile';
@@ -11,12 +10,14 @@ import CreateWall from './pages/createWall';
 import Tweets from './pages/tweets';
 import CreateTweet from './pages/createTweet';
 import EditWall from './pages/editWall';
+// import PublicPage from './pages/publicPage';
+import MainPage from './pages/main';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+      <Route path="/" element={<MainPage />} />
         {/* <Route path="/wall/:id" element={<PublicWall />} /> */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
@@ -28,6 +29,7 @@ function App() {
         <Route path="/walls/:wallId/tweets" element={<Tweets />} />
         <Route path="/walls/:wallId/create-tweet" element={<CreateTweet />} />
         <Route path="/walls/:wallId/edit" element={<EditWall />} />
+        <Route path="/walls/:wallId/public" element={<Tweets />} />
       </Routes>
     </Router>
   );

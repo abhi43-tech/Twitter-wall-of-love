@@ -5,7 +5,7 @@ import TweetCard from "../tweetCard";
 import { DndContext, closestCorners } from "@dnd-kit/core";
 import { SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 
-const TweetList = ({ wallId }) => {
+const TweetList = ({ wallId, isEditable }) => {
     const [tweets, setTweets] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -72,8 +72,8 @@ const TweetList = ({ wallId }) => {
         <div className="p-4 md:p-6">
             {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
-            <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-4 gap-2">
-                <h2 className="text-lg md:text-xl font-semibold">Tweet Wall</h2>
+            {isEditable ? (<div className="flex flex-col sm:flex-row sm:justify-between items-center mb-4 gap-2">
+                <h1 className="text-lg md:text-xl font-semibold">Tweet Wall</h1>
                 <button
                     onClick={handleRandomize}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed w-full sm:w-auto"
@@ -81,7 +81,7 @@ const TweetList = ({ wallId }) => {
                 >
                     Randomize Tweets
                 </button>
-            </div>
+            </div>): null}
 
             {loading ? (
                 <div className="text-center p-6 text-gray-500">Loading tweets...</div>
@@ -97,6 +97,7 @@ const TweetList = ({ wallId }) => {
                                     id={tweet.id}
                                     tweet={tweet}
                                     onDelete={() => handleDelete(tweet.id)}
+                                    isEditable={isEditable}
                                 />
                             ))}
                         </div>
