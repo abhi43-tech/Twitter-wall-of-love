@@ -10,15 +10,15 @@ import CreateWall from './pages/createWall';
 import Tweets from './pages/tweets';
 import CreateTweet from './pages/createTweet';
 import EditWall from './pages/editWall';
-// import PublicPage from './pages/publicPage';
 import MainPage from './pages/main';
+import UserVerification from './components/auth/user-verification';
+import WallOverview from './pages/wall-overview';
 
 function App() {
   return (
     <Router>
       <Routes>
       <Route path="/" element={<MainPage />} />
-        {/* <Route path="/wall/:id" element={<PublicWall />} /> */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
@@ -30,9 +30,11 @@ function App() {
         <Route path="/walls/:wallId/create-tweet" element={<CreateTweet />} />
         <Route path="/walls/:wallId/edit" element={<EditWall />} />
         <Route path="/walls/:wallId/public" element={<Tweets />} />
+        <Route path="/user-verification" element={<UserVerification />} />
+        <Route path="/wall-overview" element={<WallOverview />} />
       </Routes>
     </Router>
   );
 }
 
-export default App;
+export default App

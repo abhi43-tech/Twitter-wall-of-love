@@ -11,7 +11,8 @@ export const API_ENDPOINTS = {
   UPDATE_USER: `${BASE_URL}/user`,
   DELETE_USER: `${BASE_URL}/user`,
   GENERATE_API_TOKEN: `${BASE_URL}/user/generate-api-token`,
-  
+  RESEND_VERIFICATION_EMAIL: `${BASE_URL}/user/resend-verification-email`,
+  VERIFY_EMAIL: `${BASE_URL}/user/verify-email`,
 
   // Wall endpoints
   CREATE_WALL: `${BASE_URL}/walls`,

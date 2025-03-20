@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import api from "../../services/api";
 import { API_ENDPOINTS } from "../../services/apiEndpoints";
+import ReactQuill from "react-quill"; 
+import "react-quill/dist/quill.snow.css"; 
 
 const WallForm = ({ onWallCreated, wall }) => {
   const [title, setTitle] = useState(wall?.title || "");
@@ -59,6 +61,15 @@ const WallForm = ({ onWallCreated, wall }) => {
     setSocialLinks(socialLinks.filter((_, i) => i !== index));
   };
 
+  const quillModules = {
+    toolbar: [
+      ["bold", "italic", "underline"], // Basic formatting
+      [{ list: "ordered" }, { list: "bullet" }], // Lists
+      ["link"], // Hyperlinks
+      ["clean"], // Remove formatting
+    ],
+  };
+
   return (
     <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
       {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -78,10 +89,11 @@ const WallForm = ({ onWallCreated, wall }) => {
         {/* Description */}
         <div>
           <label className="block text-gray-700 font-medium">Description</label>
-          <textarea
+          <ReactQuill
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+            onChange={setDescription} 
+            modules={quillModules}
+            className="bg-white border rounded"
           />
         </div>
 

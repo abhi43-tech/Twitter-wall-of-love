@@ -73,7 +73,7 @@ const TweetList = ({ wallId, isEditable }) => {
             {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
             {isEditable ? (<div className="flex flex-col sm:flex-row sm:justify-between items-center mb-4 gap-2">
-                <h1 className="text-lg md:text-xl font-semibold">Tweet Wall</h1>
+                <h1 className="text-lg md:text-xl font-semibold">Tweets</h1>
                 <button
                     onClick={handleRandomize}
                     className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed w-full sm:w-auto"
@@ -88,21 +88,35 @@ const TweetList = ({ wallId, isEditable }) => {
             ) : tweets.length === 0 ? (
                 <div className="text-center p-6 text-gray-500">No tweets added yet.</div>
             ) : (
-                <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
-                    <SortableContext items={tweets.map(tweet => tweet.id)} strategy={rectSortingStrategy}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-6">
-                            {tweets.map((tweet) => (
-                                <TweetCard
-                                    key={tweet.id}
-                                    id={tweet.id}
-                                    tweet={tweet}
-                                    onDelete={() => handleDelete(tweet.id)}
-                                    isEditable={isEditable}
-                                />
-                            ))}
-                        </div>
-                    </SortableContext>
-                </DndContext>
+                isEditable ? (
+                    <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
+                        <SortableContext items={tweets.map(tweet => tweet.id)} strategy={rectSortingStrategy}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-6">
+                                {tweets.map((tweet) => (
+                                    <TweetCard
+                                        key={tweet.id}
+                                        id={tweet.id}
+                                        tweet={tweet}
+                                        onDelete={() => handleDelete(tweet.id)}
+                                        isEditable={isEditable}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </DndContext>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-6">
+                                {tweets.map((tweet) => (
+                                    <TweetCard
+                                        key={tweet.id}
+                                        id={tweet.id}
+                                        tweet={tweet}
+                                        onDelete={() => handleDelete(tweet.id)}
+                                        isEditable={isEditable}
+                                    />
+                                ))}
+                            </div>
+                )
             )}
         </div>
     );

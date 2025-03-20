@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { API_ENDPOINTS } from "../services/apiEndpoints";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const EditWall = () => {
     const { wallId } = useParams();
@@ -128,6 +130,16 @@ const EditWall = () => {
         alert("Copied to clipboard!");
     };
 
+    // Quill toolbar options
+    const quillModules = {
+        toolbar: [
+            ["bold", "italic", "underline"], 
+            [{ list: "ordered" }, { list: "bullet" }], 
+            ["link"],
+            ["clean"], 
+        ],
+    };
+
     if (loading)
         return <div className="text-center text-gray-600">Loading...</div>;
     if (error) return <div className="text-center text-red-600">{error}</div>;
@@ -136,6 +148,12 @@ const EditWall = () => {
 
     return (
         <div className="p-4 max-w-4xl mx-auto">
+            <button
+                onClick={() => navigate(-1)}
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-4"
+            >
+                <span className="text-lg">←</span> <span>Back</span>
+            </button>
             <h2 className="text-3xl font-bold mb-6 text-center">Edit Wall</h2>
 
             <form
@@ -165,10 +183,11 @@ const EditWall = () => {
 
                 <div className="mb-4">
                     <label className="block text-gray-700">Description</label>
-                    <textarea
+                    <ReactQuill
                         value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full p-2 border rounded"
+                        onChange={setDescription}
+                        modules={quillModules}
+                        className="bg-white border rounded"
                     />
                 </div>
 
