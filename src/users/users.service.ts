@@ -34,9 +34,9 @@ export class UsersService {
 
   async create(user: CreateUserDto, image: Express.Multer.File): Promise<void> {
     const existingUser = await this.userRepository.findOne({
-      where: [{ email: user.email }, { name: user.name }],
+      where: [{ email: user.email }],
     });
-
+    
     if (existingUser) {
       throw new BadRequestException(
         'User with this email or username already exists.',
@@ -55,7 +55,75 @@ export class UsersService {
       newUser.profile_pic = profilePicURL;
     }
 
+    const verificationToken = this.jwtService.sign(
+      { email: user.email },
+      {
+        secret: this.configService.get<string>('JWT_VERIFICATION_SECRET'),
+        expiresIn: '24h',
+      },
+    );
+
+    const verificationLink = `${this.configService.get<string>('FRONTEND_URL')}/user-verification?token=${verificationToken}`;
+
+    await this.mailService.sendMail({
+      email: user.email,
+      subject: 'Welcome! Verify Your Email',
+      text: `Please click the link below to verify your email:\n\n${verificationLink}\n\nThis link expires in 24 hours.`,
+    });
+
     await this.userRepository.save(newUser);
+  }
+
+  async verifyEmail(token) {
+    console.log(token);
+    try {
+      const { email } = await this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_VERIFICATION_SECRET'),
+      });
+
+      const user = await this.userRepository.findOne({ where: { email: email.email } });
+      if (!user) {
+        throw new NotFoundException('User not found.');
+      }
+  
+      if (user.isVerified) {
+        throw new BadRequestException('User is already verified.');
+      }
+
+      user.isVerified = true;
+      await this.userRepository.save(user);
+      return { message: 'Email verified successfully.' };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired verification link.');
+    }
+  }
+
+  async resendVerificationEmail(email) {
+    const user = await this.userRepository.findOne({
+      where: { email: email.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Email not registered.');
+    }
+
+    const verificationToken = this.jwtService.sign(
+      { email: email },
+      {
+        secret: this.configService.get<string>('JWT_VERIFICATION_SECRET'),
+        expiresIn: '24h',
+      },
+    );
+
+    const verificationLink = `${this.configService.get<string>('FRONTEND_URL')}/user-verification?token=${verificationToken}`;
+
+    await this.mailService.sendMail({
+      email: email.email,
+      subject: 'Welcome! Verify Your Email',
+      text: `Please click the link below to verify your email:\n\n${verificationLink}\n\nThis link expires in 24 hours.`,
+    });
+
+    return { message: 'Email was sent.' };
   }
 
   async login(user: LoginDto, res) {
@@ -74,6 +142,7 @@ export class UsersService {
   async get(req) {
     const user = await this.userRepository.findOne({
       where: { email: req.user.email },
+      select: ['id', 'name', 'email', 'profile_pic', 'api_token'],
     });
 
     return user;

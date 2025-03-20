@@ -34,4 +34,7 @@ export class User {
     cascade: true,
   })
   walls: Wall[];
+
+  @Column({ default: false })
+  isVerified: boolean;
 }

@@ -11,6 +11,7 @@ import {
   UploadedFile,
   ParseFilePipe,
   Get,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/signup.dto';
@@ -38,7 +39,18 @@ export class UsersController {
     @Response() res,
   ) {
     await this.userService.create(user, image);
-    return res.json({ message: 'User created successfully.' });
+    return res.json({message: "Please verify your email."});
+  }
+
+  @Post('resend-verification-email')
+  async resendVerificationEmail(@Body() email: string) {
+    await this.userService.resendVerificationEmail(email);
+    return { message: 'Email was sent.' };
+  }
+
+  @Post('verify-email')
+  async verifyEmail(@Body('token') token: string) {
+    return await this.userService.verifyEmail(token);
   }
 
   @UseGuards(LoginGuard)

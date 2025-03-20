@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -244,8 +245,8 @@ export class WallsService {
     wall.sharable = true;
     await this.wallRepository.save(wall);
 
-    const baseUrl = this.configService.get<string>('APP_URL');
-    const shareLink = `${baseUrl}/walls/${wallId}/public`;
+    const baseUrl = this.configService.get<string>('FRONTEND_URL');
+    const shareLink = `${baseUrl}/walls/${wall.id}/public`;
     return { link: shareLink };
   }
 
@@ -282,7 +283,7 @@ export class WallsService {
       await this.wallRepository.save(wall);
     }
 
-    const baseUrl = this.configService.get<string>('APP_URL');
+    const baseUrl = this.configService.get<string>('FRONTEND_URL');
     const embedUrl = `${baseUrl}/walls/${wallId}/public`;
     const embedCode = `<iframe src="${embedUrl}" width="70%" height="400"></iframe>`;
     return { embedCode };

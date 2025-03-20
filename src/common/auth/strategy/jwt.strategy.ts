@@ -44,7 +44,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         const user = await this.userRepository.findOne({
           where: { email: decoded.email },
         });
-        if (user.api_token === rawJwtToken) {
+        if (user?.api_token === rawJwtToken) {
           console.log('api call...');
           return done(null, apiSecret);
         }
