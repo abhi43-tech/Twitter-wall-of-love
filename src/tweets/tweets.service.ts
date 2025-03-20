@@ -44,38 +44,28 @@ export class TweetService {
       if (wall.user.email != (req.user as User).email)
         throw new BadRequestException('Only Owner can create Tweets.');
 
-      // const request = `${this.TWITTER_API_URL}${tweetId}?expansions=author_id&tweet.fields=public_metrics&user.fields=profile_image_url`;
-      // const response = await axios.get(request, {
-      //   headers: {
-      //     Authorization: `Bearer ${this.token}`,
-      //   },
-      // });
+      const request = `${this.TWITTER_API_URL}${tweetId}?expansions=author_id&tweet.fields=public_metrics&user.fields=profile_image_url`;
+      const response = await axios.get(request, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      });
 
-      // const tweetData = response.data.data;
-      // const userData = response.data.includes.users;
+      const tweetData = response.data.data;
+      const userData = response.data.includes.users;
 
       const tweetCount = await this.tweetRepo.count({
         where: { wall: { id: wallId } },
       });
 
-      // const tweet = this.tweetRepo.create({
-      //   tweet_id: tweetData.id,
-      //   author_id: userData[0].id,
-      //   author_name: userData[0].username,
-      //   profile_pic: userData[0].profile_image_url,
-      //   content: tweetData.text,
-      //   likes: tweetData.public_metrics.like_count,
-      //   comments: tweetData.public_metrics.reply_count,
-      //   order: tweetCount,
-      //   wall: wall,
-      // });
       const tweet = this.tweetRepo.create({
-        tweet_id: '1',
-        author_id: 'wall',
-        author_name: 'wall',
-        content: 'tweet',
-        likes: Math.random() * 1000,
-        comments: 122,
+        tweet_id: tweetData.id,
+        author_id: userData[0].id,
+        author_name: userData[0].username,
+        profile_pic: userData[0].profile_image_url,
+        content: tweetData.text,
+        likes: tweetData.public_metrics.like_count,
+        comments: tweetData.public_metrics.reply_count,
         order: tweetCount,
         wall: wall,
       });
